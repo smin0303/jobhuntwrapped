@@ -1,0 +1,19 @@
+---
+title: "JobHuntWrapped"
+output: html_document
+date: "2025-01-04"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r message = FALSE}
+data <- readr::read_csv('JobApplications2024.csv')
+
+head(data)
+```
+
+
