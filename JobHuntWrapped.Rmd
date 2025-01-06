@@ -1,19 +1,63 @@
 ---
-title: "JobHuntWrapped"
+title: "My Job Hunt for 2024 Wrapped"
 output: html_document
-date: "2025-01-04"
 ---
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(usmap)
+library(sf)
+library(rnaturalearth)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+When I graduated from the University of Texas at Austin with my Bachelor or Science in Mathematics in May 2023, I had already been accepted into their online Master's program for Data Science. Becoming a data scientist was my goal from the beginning, thus, the Master's program seemed like a natural course of action. However, I had not been paying attention to the job market. Many of my classmates who had exceptional grades, many extracurricular involvement, and projects struggles to find full-time employment, especially in the tech sector. 
+
+I thought I was safe, hoping that the job market will sprout back upon graduation from my Master's program in December 2025. However, in such a competitive field, experience was everything. Additionally, most of my classmates are full-time employees already in the field, many often talking about their families/children and balancing classes with their job. Fear and imposter syndrome set in and I began to apply to jobs, both full-time and internships. If my classmates can balance a full-time job and school, why couldn't I?
+
+The answer is that I could not because *no one would hire me*. I have one past internship experience and few projects. I am not the ideal candidate. I am a small fish in a big pond. 
+
+I spent many hours of 2024, scrolling on LinkedIn, making accounts on Workday, and tracking the progress of all of my applications. However, 2025 has dawned upon us. The most I could get out of my time now is to make a project out of it and hope that potential recruiters and/or employers see it! Hello! I am in need of a job or experience! I have skills! Please do not hesitate to reach out! :D 
+
+Regardless if you are a recruiter, employer, curious, or here for fun, thank you for taking the time to look at my 2024 Job Hunt Wrapped. 
 
 ```{r message = FALSE}
-data <- readr::read_csv('JobApplications2024.csv')
+jobs <- readr::read_csv('JobApplications2024.csv')
+jobs$type = ifelse(grepl("Intern", jobs$Position) | grepl("intern", jobs$Position), "Internship", "Full time")
+jobs$date = mdy(jobs$`Date Applied`)
 
-head(data)
+head(jobs)
 ```
+
+```{r}
+ggplot(jobs, aes(fct_rev(factor(month(date))), fill = factor(month(date)))) +
+  geom_bar(show.legend = FALSE) + 
+  scale_x_discrete(name = "Month",
+                   breaks = 1:12, 
+                   labels = month.name[1:12]) +
+  scale_y_continuous(name = "Number of Job Applications",
+                   seq(0, 60, by = 5)) +
+  coord_flip() 
+```
+
+```{r}
+ggplot(jobs) +
+  geom_bar(aes(y = fct_rev(fct_infreq(`Recruitment System`)))) + 
+  scale_x_continuous(name = "Number of Job Applications",
+                     breaks = seq(0, 40, by = 5)) + 
+  scale_y_discrete(name = "Recruiting System")
+
+# make it so that recruiting systems with less than 5 go into "Other"
+```
+References:
+https://jtr13.github.io/cc19/different-ways-of-plotting-u-s-map-in-r.html 
+
+Plot cities next!
+
+```{r}
+plot_usmap()
+```
+
+
 
 
