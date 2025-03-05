@@ -22,7 +22,7 @@ I spent many hours of 2024, scrolling on LinkedIn, making accounts on Workday, a
 Regardless if you are a recruiter, employer, curious, or here for fun, thank you for taking the time to look at my 2024 Job Hunt Wrapped. 
 
 ```{r message = FALSE}
-jobs <- readr::read_csv('JobApplications2024.csv')
+jobs <- readr::read_csv('JobApplications2024_v2.csv')
 jobs$type = ifelse(grepl("Intern", jobs$Position) | grepl("intern", jobs$Position), "Internship", "Full time")
 jobs$date = mdy(jobs$`Date Applied`)
 
@@ -41,14 +41,63 @@ ggplot(jobs, aes(fct_rev(factor(month(date))), fill = factor(month(date)))) +
 ```
 
 ```{r}
-ggplot(jobs) +
-  geom_bar(aes(y = fct_rev(fct_infreq(`Recruitment System`)))) + 
-  scale_x_continuous(name = "Number of Job Applications",
-                     breaks = seq(0, 40, by = 5)) + 
-  scale_y_discrete(name = "Recruiting System")
-
-# make it so that recruiting systems with less than 5 go into "Other"
+jobs %>%
+  mutate(
+    rec_sys = fct_lump_n(fct_infreq(`Recruitment System`), 10),
+    highlight = fct_other(rec_sys, keep = 'Other', other_level = 'Named')
+  ) %>%
+  ggplot() +
+    geom_bar(aes(y = fct_rev(rec_sys), fill = highlight)) + 
+    scale_x_continuous(name = "Number of Job Applications",
+                       breaks = seq(0, 40, by = 5)) + 
+    scale_y_discrete(name = "Recruitment System")
 ```
+
+```{r}
+library(ggforce)
+
+job_type = data.frame(table(jobs$type))
+names(job_type) = c('Type', 'Count')
+
+# Modified from https://wilkelab.org/DSC385/slides/visualizing-proportions.html
+pie_data <- job_type %>%
+  arrange(Count) %>% 
+  mutate(
+    end_angle = 2*pi*cumsum(Count)/sum(Count),   # end angle 
+    start_angle = lag(end_angle, default = 0),   # start angle
+    mid_angle = 0.5*(start_angle + end_angle),   # middle for text
+  )
+# pie_data
+
+ggplot(pie_data) +
+  aes(
+    x0 = 0, y0 = 0, r0 = 0, r = 1,
+    start = start_angle, end = end_angle,
+    fill = Type
+  ) +
+  geom_arc_bar() +
+  geom_text( # place amounts inside the pie
+    aes(
+      x = 0.6 * sin(mid_angle),
+      y = 0.6 * cos(mid_angle),
+      label = Count
+    )
+  ) +
+  coord_fixed() +
+  theme_void() +
+  ggtitle("Types of Positions")
+```
+
+```{r}
+locations = separate_longer_delim(jobs, Location, delim = ";")
+
+cities = data.frame(table(trimws(locations$Location, which = 'left')))
+names(cities) = c('City', 'Count')
+cities
+```
+
+
+
 References:
 https://jtr13.github.io/cc19/different-ways-of-plotting-u-s-map-in-r.html 
 
@@ -58,6 +107,13 @@ Plot cities next!
 plot_usmap()
 ```
 
+```{r}
+sf_us <- ne_states(
+  country = "United States of America",
+  returnclass='sf'
+)
 
+sf_us
+```
 
 
