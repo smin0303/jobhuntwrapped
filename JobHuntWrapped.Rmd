@@ -93,27 +93,109 @@ locations = separate_longer_delim(jobs, Location, delim = ";")
 
 cities = data.frame(table(trimws(locations$Location, which = 'left')))
 names(cities) = c('City', 'Count')
-cities
 ```
 
+References for Map:
 
-
-References:
 https://jtr13.github.io/cc19/different-ways-of-plotting-u-s-map-in-r.html 
 
-Plot cities next!
+https://www.storybench.org/geocode-csv-addresses-r/ 
 
 ```{r}
-plot_usmap()
+library(ggmap)
+
+# Google geocode API enabled in Google Cloud Platform
+# registered key in console for this session using register_key()
+# however, API doesn't work all the time. Necessary table was exported to CSV - see cities_latlon.csv
+
+#cities_filtered = cities[!cities$City %in% c("Remote","Remote, CA", "TX", "Various"),] 
+#cities_filtered[, c('lon', 'lat')] = NA
+#cities_filtered$City = as.character(cities_filtered$City)
+
+#for (i in 1:nrow(cities_filtered)) {
+#  latlon = geocode(cities_filtered$City[i], output = "latlona", source = "google")
+#  cities_filtered$lon[i] <- as.numeric(latlon[1])
+#  cities_filtered$lat[i] <- as.numeric(latlon[2])
+#}
+
+# write.csv(cities_filtered, "citites_latlon.csv", row.names=TRUE)
+
+cities_filtered = read_csv("cities_latlon.csv", col_names = TRUE, show_col_types = FALSE)
+
+cities_other = cities[cities$City %in% c("Remote","Remote, CA", "TX", "Various"),] 
+cities_other$City = as.character(cities_other$City)
+others = paste(cities_other$City, cities_other$Count, sep = ':', collapse = '\n')
+
+map_world <- map_data("state")
+
+ggplot() +
+  geom_polygon(data = map_world, 
+               aes(x = long, y = lat, group = group), 
+               color = 'black', 
+               fill = 'white') +
+  geom_point(data = cities_filtered, 
+             aes(x = lon, y = lat, size = Count), 
+             color = 'blue', 
+             alpha = 0.5) + 
+  scale_size(range = c(0, 15)) +
+  guides(fill=none) +
+  geom_text(aes(x=-120, y=27,label = others)) +
+  ggtitle("Locations of Applied Jobs")
 ```
 
-```{r}
-sf_us <- ne_states(
-  country = "United States of America",
-  returnclass='sf'
-)
+References:
 
-sf_us
+https://ggforce.data-imaginist.com/reference/geom_parallel_sets.html
+
+https://rviews.rstudio.com/2019/09/19/intro-to-ggforce/
+
+I have not gone beyond either a behavioral interview OR a technical interview. Sometimes, I can't even tell which one it is since they just ask me to solve some random problems that are not behavioral questions nor coding questions. This is my best representation of the course of my applications. A Sankey diagram seemed unnecessary since my applications have gone nowhere. A parallel set diagram seemed sufficient enough to showcase where my applications have went.
+
+```{r}
+library(ggforce)
+
+jobs$BA = as.character(jobs$`Behavioral Assessment`)
+jobs$TA = as.character(jobs$`Took Technical Assessment`)
+
+jobs %>%
+  gather_set_data(c("type", "BA", "TA")) %>%
+  ggplot(aes(x, id = id, split = y, value = 1)) +
+  geom_parallel_sets(aes(fill = fct_rev(Status)), alpha = 0.5, axis.width = 0.1) +
+  geom_parallel_sets_axes(axis.width = 0.1, color = "white", fill = "darkgrey") +
+  geom_parallel_sets_labels(angle = 0, nudge_x = 0.2) +
+  scale_x_continuous(
+    name = "",
+    limits = c(11.5, 15.5),
+    breaks = c(12, 13, 14, 15),
+    labels = c("Type", "", "Behavioral Interview", "Technical Interview")
+  ) +
+  guides(fill=guide_legend("Status")) +
+  ggtitle("What happened to my applications?")
+  
+```
+
+
+```{r, fig.dim=c(10, 8)}
+jobs %>%
+  mutate(
+    rec_sys = fct_lump_n(fct_infreq(`Recruitment System`), 10)
+    ) %>%
+  gather_set_data(c("type", "BA", "TA", "rec_sys")) %>%
+  ggplot(aes(x, id = id, split = y, value = 1)) +
+  geom_parallel_sets(aes(fill = fct_rev(Status)), alpha = 0.5, axis.width = 0.1) +
+  geom_parallel_sets_axes(axis.width = 0.1, color = "white", fill = "darkgrey") +
+  geom_parallel_sets_labels(angle = 0, nudge_x = 0.2) +
+  scale_x_continuous(
+    name = "",
+    limits = c(11.5, 16.5),
+    breaks = c(12, 13, 14, 15, 16),
+    labels = c("Type", "", "Behavioral Interview", "Technical Interview", "Recruitment System")
+    ) +
+  guides(fill=guide_legend("Status")) +
+  labs(
+    title = "What happened to my applications?", 
+    subtitle = "Add in what recruiting system each application was done with"
+    )
 ```
 
 
