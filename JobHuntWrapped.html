@@ -462,12 +462,9 @@ names(cities) = c(&#39;City&#39;, &#39;Count&#39;)</code></pre>
 <p><a href="https://www.storybench.org/geocode-csv-addresses-r/" class="uri">https://www.storybench.org/geocode-csv-addresses-r/</a></p>
 <p>D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2.
 The R Journal, 5(1), 144-161. URL <a href="http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf" class="uri">http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf</a></p>
-<pre class="r"><code>library(ggmap)</code></pre>
-<pre><code>## ℹ Google&#39;s Terms of Service: &lt;https://mapsplatform.google.com&gt;
-##   Stadia Maps&#39; Terms of Service: &lt;https://stadiamaps.com/terms-of-service/&gt;
-##   OpenStreetMap&#39;s Tile Usage Policy: &lt;https://operations.osmfoundation.org/policies/tiles/&gt;
-## ℹ Please cite ggmap if you use it! Use `citation(&quot;ggmap&quot;)` for details.</code></pre>
-<pre class="r"><code># Google geocode API enabled in Google Cloud Platform
+<pre class="r"><code>library(ggmap)
+
+# Google geocode API enabled in Google Cloud Platform
 # registered key in console for this session using register_key()
 # however, API doesn&#39;t work all the time. Necessary table was exported to CSV - see cities_latlon.csv
 
@@ -483,10 +480,9 @@ The R Journal, 5(1), 144-161. URL <a href="http://journal.r-project.org/archive/
 
 # write.csv(cities_filtered, &quot;citites_latlon.csv&quot;, row.names=TRUE)
 
-cities_filtered = read_csv(&quot;cities_latlon.csv&quot;, col_names = TRUE, show_col_types = FALSE)</code></pre>
-<pre><code>## New names:
-## • `` -&gt; `...1`</code></pre>
-<pre class="r"><code>cities_other = cities[cities$City %in% c(&quot;Remote&quot;,&quot;Remote, CA&quot;, &quot;TX&quot;, &quot;Various&quot;),] 
+cities_filtered = read_csv(&quot;cities_latlon.csv&quot;, col_names = TRUE, show_col_types = FALSE)
+
+cities_other = cities[cities$City %in% c(&quot;Remote&quot;,&quot;Remote, CA&quot;, &quot;TX&quot;, &quot;Various&quot;),] 
 cities_other$City = as.character(cities_other$City)
 others = paste(cities_other$City, cities_other$Count, sep = &#39;:&#39;, collapse = &#39;\n&#39;)
 
@@ -516,27 +512,6 @@ nor coding questions. This is my best representation of the course of my
 applications. A Sankey diagram seemed unnecessary since my applications
 have gone nowhere. A parallel set diagram seemed sufficient enough to
 showcase where my applications have went.</p>
-<pre class="r"><code>jobs$BA = as.character(jobs$`Behavioral Assessment`)
-jobs$TA = as.character(jobs$`Took Technical Assessment`)
-
-jobs</code></pre>
-<pre><code>## # A tibble: 189 × 16
-##    Company   Position  Status `Recruitment System` Location Note  `Date Applied`
-##    &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;                &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;         
-##  1 AMD       Summer 2… Rejec… iCIMS                &lt;NA&gt;     Coul… 1/15/2024     
-##  2 Apple     Machine … Rejec… company website      &lt;NA&gt;     &lt;NA&gt;  1/9/2024      
-##  3 Discord   Data Sci… Rejec… greenhouse           &lt;NA&gt;     Damn… 1/5/2024      
-##  4 Adobe     2024 Int… Appli… Workday              &lt;NA&gt;     &lt;NA&gt;  1/15/2024     
-##  5 Intel     College … Rejec… Workday              &lt;NA&gt;     Had … 1/15/2024     
-##  6 Visa      Data Eng… Rejec… Smart Recruiters     &lt;NA&gt;     &lt;NA&gt;  2/7/2024      
-##  7 Sephora   DevOps I… Rejec… company website      &lt;NA&gt;     &lt;NA&gt;  2/7/2024      
-##  8 GSD&amp;M     Analytic… Appli… Candidate Care       &lt;NA&gt;     &lt;NA&gt;  2/29/2024     
-##  9 Indeed    Sales St… Rejec… company website      Austin,… Inde… 3/20/2024     
-## 10 Pinterest Data Sci… Rejec… greenhouse           &lt;NA&gt;     &lt;NA&gt;  3/27/2024     
-## # ℹ 179 more rows
-## # ℹ 9 more variables: `Job ID` &lt;chr&gt;, `Behavioral Assessment` &lt;lgl&gt;,
-## #   `Took Technical Assessment` &lt;lgl&gt;, `Went to On-site` &lt;lgl&gt;, Offer &lt;lgl&gt;,
-## #   type &lt;chr&gt;, date &lt;date&gt;, BA &lt;chr&gt;, TA &lt;chr&gt;</code></pre>
 <pre class="r"><code>library(ggforce)
 
 jobs$BA = as.character(jobs$`Behavioral Assessment`)

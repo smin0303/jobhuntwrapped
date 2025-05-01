@@ -105,7 +105,7 @@ https://www.storybench.org/geocode-csv-addresses-r/
 
 D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1), 144-161. URL http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
-```{r, fig.dim=c(10, 6)}
+```{r, fig.dim=c(10, 6), message=FALSE}
 library(ggmap)
 
 # Google geocode API enabled in Google Cloud Platform
@@ -154,14 +154,6 @@ https://ggforce.data-imaginist.com/reference/geom_parallel_sets.html
 https://rviews.rstudio.com/2019/09/19/intro-to-ggforce/
 
 I have not gone beyond either a behavioral interview OR a technical interview. Sometimes, I can't even tell which one it is since they just ask me to solve some random problems that are not behavioral questions nor coding questions. This is my best representation of the course of my applications. A Sankey diagram seemed unnecessary since my applications have gone nowhere. A parallel set diagram seemed sufficient enough to showcase where my applications have went.
-
-```{r}
-jobs$BA = as.character(jobs$`Behavioral Assessment`)
-jobs$TA = as.character(jobs$`Took Technical Assessment`)
-
-jobs
-```
-
 
 ```{r}
 library(ggforce)
