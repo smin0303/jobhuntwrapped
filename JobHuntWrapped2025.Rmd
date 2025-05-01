@@ -1,0 +1,205 @@
+---
+title: "My Job Hunt for 2025"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(usmap)
+library(sf)
+library(rnaturalearth)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Last updated: 5/1/2025
+
+*This is the same code as Job Hunt Wrapped 2024 but modified and used for 2025. Thanks for looking!*
+
+When I graduated from the University of Texas at Austin with my Bachelor or Science in Mathematics in May 2023, I had already been accepted into their online Master's program for Data Science. Becoming a data scientist was my goal from the beginning, thus, the Master's program seemed like a natural course of action. However, I had not been paying attention to the job market. Many of my classmates who had exceptional grades, many extracurricular involvement, and projects struggles to find full-time employment, especially in the tech sector. 
+
+I thought I was safe, hoping that the job market will sprout back upon graduation from my Master's program in December 2025. However, in such a competitive field, experience was everything. Additionally, most of my classmates are full-time employees already in the field, many often talking about their families/children and balancing classes with their job. Fear and imposter syndrome set in and I began to apply to jobs, both full-time and internships. If my classmates can balance a full-time job and school, why couldn't I?
+
+The answer is that I could not because *no one would hire me*. I have one past internship experience and few projects. I am not the ideal candidate. I am a small fish in a big pond. 
+
+I spent many hours of 2024, scrolling on LinkedIn, making accounts on Workday, and tracking the progress of all of my applications. *However, now we are in the middle of 2025.* The most I could get out of my time now is to make a project out of it and hope that potential recruiters and/or employers see it! Hello! I am in need of a job or experience! I have skills! Please do not hesitate to reach out! :D 
+
+Regardless if you are a recruiter, employer, curious, or here for fun, thank you for taking the time to look at my 2025 Job Hunt Wrapped. 
+
+```{r message = FALSE}
+jobs <- readr::read_csv('JobApplications2025.csv')
+jobs$type = ifelse(grepl("Intern", jobs$Position) | grepl("intern", jobs$Position), "Internship", "Full time")
+jobs$date = mdy(jobs$`Date Applied`)
+
+head(jobs)
+```
+
+```{r}
+ggplot(jobs, aes(fct_rev(factor(month(date))), fill = factor(month(date)))) +
+  geom_bar(show.legend = FALSE) + 
+  scale_x_discrete(name = "Month",
+                   breaks = 1:12, 
+                   labels = month.name[1:12]) +
+  scale_y_continuous(name = "Number of Job Applications",
+                   seq(0, 60, by = 5)) +
+  coord_flip() 
+```
+
+```{r}
+jobs %>%
+  mutate(
+    rec_sys = fct_lump_n(fct_infreq(`Recruitment System`), 10),
+    highlight = fct_other(rec_sys, keep = 'Other', other_level = 'Named')
+  ) %>%
+  ggplot() +
+    geom_bar(aes(y = fct_rev(rec_sys), fill = highlight)) + 
+    scale_x_continuous(name = "Number of Job Applications",
+                       breaks = seq(0, 40, by = 5)) + 
+    scale_y_discrete(name = "Recruitment System")
+```
+
+```{r}
+library(ggforce)
+
+job_type = data.frame(table(jobs$type))
+names(job_type) = c('Type', 'Count')
+
+# Modified from https://wilkelab.org/DSC385/slides/visualizing-proportions.html
+pie_data <- job_type %>%
+  arrange(Count) %>% 
+  mutate(
+    end_angle = 2*pi*cumsum(Count)/sum(Count),   # end angle 
+    start_angle = lag(end_angle, default = 0),   # start angle
+    mid_angle = 0.5*(start_angle + end_angle),   # middle for text
+  )
+# pie_data
+
+ggplot(pie_data) +
+  aes(
+    x0 = 0, y0 = 0, r0 = 0, r = 1,
+    start = start_angle, end = end_angle,
+    fill = Type
+  ) +
+  geom_arc_bar() +
+  geom_text( # place amounts inside the pie
+    aes(
+      x = 0.6 * sin(mid_angle),
+      y = 0.6 * cos(mid_angle),
+      label = Count
+    )
+  ) +
+  coord_fixed() +
+  theme_void() +
+  ggtitle("Types of Positions")
+```
+
+```{r}
+locations = separate_longer_delim(jobs, Location, delim = ";")
+
+cities = data.frame(table(trimws(locations$Location, which = 'left')))
+names(cities) = c('City', 'Count')
+```
+
+References/Citations for Map:
+
+https://jtr13.github.io/cc19/different-ways-of-plotting-u-s-map-in-r.html 
+
+https://www.storybench.org/geocode-csv-addresses-r/ 
+
+D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1), 144-161. URL http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
+
+```{r, fig.dim=c(10, 6), message=FALSE}
+library(ggmap)
+
+# Google geocode API enabled in Google Cloud Platform
+# registered key in console for this session using register_key()
+# however, API doesn't work all the time. Necessary table was exported to CSV - see cities_latlon.csv
+
+#cities_filtered = cities[!cities$City %in% c("Remote","Remote, CA", "TX", "Various"),] 
+#cities_filtered[, c('lon', 'lat')] = NA
+#cities_filtered$City = as.character(cities_filtered$City)
+
+#for (i in 1:nrow(cities_filtered)) {
+#  latlon = geocode(cities_filtered$City[i], output = "latlona", source = "google")
+#  cities_filtered$lon[i] <- as.numeric(latlon[1])
+#  cities_filtered$lat[i] <- as.numeric(latlon[2])
+#}
+
+# write.csv(cities_filtered, "citites_latlon.csv", row.names=TRUE)
+
+cities_filtered = read_csv("cities_latlon.csv", col_names = TRUE, show_col_types = FALSE)
+
+cities_other = cities[cities$City %in% c("Remote","Remote, CA", "TX", "Various"),] 
+cities_other$City = as.character(cities_other$City)
+others = paste(cities_other$City, cities_other$Count, sep = ':', collapse = '\n')
+
+map_world <- map_data("state")
+
+ggplot() +
+  geom_polygon(data = map_world, 
+               aes(x = long, y = lat, group = group), 
+               color = 'black', 
+               fill = 'white') +
+  geom_point(data = cities_filtered, 
+             aes(x = lon, y = lat, size = Count), 
+             color = 'blue', 
+             alpha = 0.5) + 
+  scale_size(range = c(0, 15)) +
+  guides(fill=none) +
+  geom_text(aes(x=-120, y=27,label = others)) +
+  ggtitle("Locations of Applied Jobs")
+```
+
+References:
+
+https://ggforce.data-imaginist.com/reference/geom_parallel_sets.html
+
+https://rviews.rstudio.com/2019/09/19/intro-to-ggforce/
+
+I have not gone beyond either a behavioral interview OR a technical interview. Sometimes, I can't even tell which one it is since they just ask me to solve some random problems that are not behavioral questions nor coding questions. This is my best representation of the course of my applications. A Sankey diagram seemed unnecessary since my applications have gone nowhere. A parallel set diagram seemed sufficient enough to showcase where my applications have went.
+
+```{r}
+library(ggforce)
+
+jobs$BA = as.character(jobs$`Took Behavior Assessment`)
+jobs$TA = as.character(jobs$`Took Technical Assessment`)
+
+jobs %>%
+  gather_set_data(c("type", "BA", "TA")) %>%
+  ggplot(aes(x, id = id, split = y, value = 1)) +
+  geom_parallel_sets(aes(fill = fct_rev(Status)), alpha = 0.5, axis.width = 0.1) +
+  geom_parallel_sets_axes(axis.width = 0.1, color = "white", fill = "darkgrey") +
+  geom_parallel_sets_labels(angle = 0, nudge_x = 0.2) +
+  scale_x_continuous(
+    name = "",
+    breaks = c(13, 14, 15, 16),
+    labels = c("Type", "", "Behavioral Interview", "Technical Interview")
+  ) +
+  guides(fill=guide_legend("Status")) +
+  ggtitle("What happened to my applications?")
+  
+```
+
+
+```{r, fig.dim=c(12, 10)}
+jobs %>%
+  mutate(
+    rec_sys = fct_lump_n(fct_infreq(`Recruitment System`), 10)
+    ) %>%
+  gather_set_data(c("type", "BA", "TA", "rec_sys")) %>%
+  ggplot(aes(x, id = id, split = y, value = 1)) +
+  geom_parallel_sets(aes(fill = fct_rev(Status)), alpha = 0.5, axis.width = 0.1) +
+  geom_parallel_sets_axes(axis.width = 0.1, color = "white", fill = "darkgrey") +
+  geom_parallel_sets_labels(angle = 0, nudge_x = 0.2) +
+  scale_x_continuous(
+    name = "",
+    breaks = c(13, 14, 15, 16, 17),
+    labels = c("Type", "", "Behavioral Interview", "Technical Interview", "Recruitment System")
+    ) +
+  guides(fill=guide_legend("Status")) +
+  labs(
+    title = "What happened to my applications?", 
+    subtitle = "Add in what recruiting system each application was done with"
+    )
+```
+
+
